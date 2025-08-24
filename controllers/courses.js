@@ -42,7 +42,7 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 
 // @desc    Add course
 // @route   POST /api/v1/bootcamps/:bootcampId/courses
-// @access  Public
+// @access  Private
 exports.addCourse = asyncHandler(async (req, res, next) => {
   req.body.bootcamp = req.params.bootcampId;
 
@@ -65,7 +65,7 @@ exports.addCourse = asyncHandler(async (req, res, next) => {
 
 // @desc    Update course
 // @route   PUT /api/v1/courses/:id
-// @access  Public
+// @access  Private
 exports.updateCourse = asyncHandler(async (req, res, next) => {
   let course = await Course.findById(req.params.id);
 
@@ -86,7 +86,7 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
 
 // @desc    Delete course
 // @route   DELETE /api/v1/courses/:id
-// @access  Public
+// @access  Private
 exports.deleteCourse = asyncHandler(async (req, res, next) => {
   let course = await Course.findById(req.params.id);
 
