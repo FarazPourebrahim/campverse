@@ -5,10 +5,12 @@ const logger = require("./middleware/logger");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/error");
 const fileupload = require("express-fileupload");
-const mongoSanitize = require("express-mongo-sanitize");
+const mongoSanitize = require("@exortek/express-mongo-sanitize");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
-const xss = require("xss-clean");
+const { xss } = require("express-xss-sanitizer");
+const rateLimit = require("express-rate-limit");
+const hpp = require("hpp");
 
 const app = express();
 
@@ -24,13 +26,7 @@ app.use(express.json());
 // Cookie parser
 app.use(cookieParser());
 
-// Route files
-const bootcamps = require("./routes/bootcamps");
-const courses = require("./routes/courses");
-const auth = require("./routes/auth");
-const users = require("./routes/users");
-const reviews = require("./routes/reviews");
-
+// Dev logging
 if (process.env.NODE_ENV === "development") {
   app.use(logger);
 }
@@ -38,17 +34,30 @@ if (process.env.NODE_ENV === "development") {
 // File uploading
 app.use(fileupload());
 
-// Sanitize data
-app.use(mongoSanitize());
-
-// Set Security Headers
+// Security middlewares
 app.use(helmet());
-
-// Prevent XSS Attacks
+app.use(mongoSanitize());
 app.use(xss());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 100,
+});
+app.use(limiter);
+
+// Parameter pollution protection
+app.use(hpp());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")));
+
+// Route files (mounted last)
+const bootcamps = require("./routes/bootcamps");
+const courses = require("./routes/courses");
+const auth = require("./routes/auth");
+const users = require("./routes/users");
+const reviews = require("./routes/reviews");
 
 app.use("/api/v1/bootcamps", bootcamps);
 app.use("/api/v1/courses", courses);
