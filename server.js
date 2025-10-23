@@ -5,6 +5,7 @@ const logger = require("./middleware/logger");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/error");
 const fileupload = require("express-fileupload");
+const mongoSanitize = require("express-mongo-sanitize");
 const cookieParser = require("cookie-parser");
 
 const app = express();
@@ -34,6 +35,9 @@ if (process.env.NODE_ENV === "development") {
 
 // File uploading
 app.use(fileupload());
+
+// Sanitize data
+app.use(mongoSanitize());
 
 // Set static folder
 app.use(express.static(path.join(__dirname, "public")));
