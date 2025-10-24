@@ -68,9 +68,6 @@ CourseSchema.statics.getAverageCost = async function (bootcampId) {
     console.log(err);
   }
 };
-{
-  console.log("Calculating avg cost...");
-}
 
 // Call getAverageCost after save
 CourseSchema.post("save", async function () {
