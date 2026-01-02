@@ -1,4 +1,4 @@
-# 🏕️ CampVerse Backend API
+# CampVerse Backend API
 
 CampVerse is a RESTful API for managing bootcamps, courses, reviews, and users.  
 It’s built with **Node.js**, **Express**, and **MongoDB**, providing full CRUD functionality, authentication, and advanced query features such as filtering, pagination, and field selection.
