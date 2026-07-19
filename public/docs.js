@@ -1,18 +1,36 @@
 /* =========================================================
-   CampVerse API — interactive documentation
+   CampVerse API - interactive documentation
    ========================================================= */
 const BASE = "/api/v1";
 const AUTH_NOTE = "Send the JWT as a Bearer token in the Authorization header, or rely on the httpOnly cookie set at login.";
 
+/* ---- Inline SVG icons (stroke = currentColor) ---- */
+const ICONS = {
+  cap:    `<path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>`,
+  book:   `<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>`,
+  star:   `<path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z"/>`,
+  lock:   `<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>`,
+  users:  `<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
+  zap:    `<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>`,
+  key:    `<circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/><path d="m15.5 7.5 3 3L22 7l-3-3"/>`,
+  user:   `<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>`,
+  login:  `<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5"/><line x1="15" y1="12" x2="3" y2="12"/>`,
+  logout: `<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><line x1="21" y1="12" x2="9" y2="12"/>`,
+};
+function icon(name, size) {
+  size = size || 16;
+  return `<svg class="ico" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ""}</svg>`;
+}
+
 const GROUPS = [
   {
-    id: "bootcamps", name: "Bootcamps", emoji: "🎓",
+    id: "bootcamps", name: "Bootcamps", icon: "cap",
     blurb: "Create and browse coding bootcamps. Supports field selection, sorting, pagination and operator-based filtering. A publisher may own only one bootcamp.",
     endpoints: [
       {
         method: "GET", path: "/bootcamps", access: "Public",
         summary: "List all bootcamps",
-        desc: "Returns all bootcamps with their populated courses. Supports rich query features: filter by any field (with gt, gte, lt, lte, in operators), select specific fields, sort, and paginate. The response includes a pagination object with next/prev pages.",
+        desc: "Returns all bootcamps with their populated courses. Supports rich query features: filter by any field (with gt, gte, lt, lte, in operators), select specific fields, sort, and paginate. The response includes a pagination object with next and prev pages.",
         query: [
           ["select", "string", false, "Comma-separated fields to return, e.g. name,description"],
           ["sort", "string", false, "Field to sort by; prefix with - for descending, e.g. -averageCost. Defaults to -createdAt"],
@@ -20,7 +38,7 @@ const GROUPS = [
           ["limit", "number", false, "Results per page (default 25)"],
           ["{field}[operator]", "any", false, "Filter operator, e.g. averageCost[lte]=10000 or careers[in]=Business"],
         ],
-        example: "/bootcamps?averageCost[lte]=10000&select=name,averageCost&sort=name&page=1&limit=10",
+        example: "/bootcamps?select=name,averageCost&sort=name&page=1&limit=10",
         response: { success: true, count: 2, pagination: { next: { page: 2, limit: 10 } }, data: [ { _id: "5d713995b721c3bb38c1f5d0", name: "Devworks Bootcamp", averageCost: 10000 } ] }
       },
       {
@@ -47,7 +65,7 @@ const GROUPS = [
           ["housing", "boolean", false, "Defaults false"],
           ["jobAssistance", "boolean", false, "Defaults false"],
           ["jobGuarantee", "boolean", false, "Defaults false"],
-          ["acceptGi", "boolean", false, "Accepts the GI Bill — defaults false"],
+          ["acceptGi", "boolean", false, "Accepts the GI Bill, defaults false"],
         ],
         sampleBody: { name: "My New Bootcamp", description: "A great place to learn to code", address: "123 Main St, Boston MA 02118", careers: ["Web Development","UI/UX"], housing: true, website: "https://mybootcamp.com" },
         example: "/bootcamps",
@@ -85,13 +103,13 @@ const GROUPS = [
     ]
   },
   {
-    id: "courses", name: "Courses", emoji: "📚",
+    id: "courses", name: "Courses", icon: "book",
     blurb: "Courses always belong to a bootcamp. Adding, updating or removing a course recalculates the parent bootcamp's average cost.",
     endpoints: [
       {
         method: "GET", path: "/courses", access: "Public",
         summary: "List all courses",
-        desc: "Returns every course across all bootcamps, each populated with its parent bootcamp's name and description. Supports the same select / sort / page / limit query features as bootcamps.",
+        desc: "Returns every course across all bootcamps, each populated with its parent bootcamp's name and description. Supports the same select, sort, page and limit query features as bootcamps.",
         query: [["select","string",false,"Fields to return"],["sort","string",false,"Sort field"],["page","number",false,"Page number"],["limit","number",false,"Results per page"]],
         example: "/courses?select=title,tuition&sort=tuition",
         response: { success: true, count: 10, pagination: {}, data: [ { _id: "5d725a037b292f5f8ceff787", title: "Front End Web Development", tuition: 8000, bootcamp: { name: "Devworks Bootcamp" } } ] }
@@ -152,15 +170,15 @@ const GROUPS = [
     ]
   },
   {
-    id: "reviews", name: "Reviews", emoji: "⭐",
-    blurb: "Ratings from 1–10 that feed a bootcamp's averageRating. Each user may leave at most one review per bootcamp.",
+    id: "reviews", name: "Reviews", icon: "star",
+    blurb: "Ratings from 1 to 10 that feed a bootcamp's averageRating. Each user may leave at most one review per bootcamp.",
     endpoints: [
       {
         method: "GET", path: "/reviews", access: "Public",
         summary: "List all reviews",
-        desc: "Returns every review, each populated with its bootcamp's name and description. Supports select / sort / page / limit.",
+        desc: "Returns every review, each populated with its bootcamp's name and description. Supports select, sort, page and limit.",
         example: "/reviews?sort=-rating&limit=5",
-        response: { success: true, count: 3, pagination: {}, data: [ { _id: "5d7a514b5d2c12c7449be020", title: "Learned a ton!", rating: 9, bootcamp: { name: "Devworks Bootcamp" } } ] }
+        response: { success: true, count: 3, pagination: {}, data: [ { _id: "5d7a514b5d2c12c7449be020", title: "Learned a ton", rating: 9, bootcamp: { name: "Devworks Bootcamp" } } ] }
       },
       {
         method: "GET", path: "/bootcamps/:bootcampId/reviews", access: "Public",
@@ -215,7 +233,7 @@ const GROUPS = [
     ]
   },
   {
-    id: "auth", name: "Authentication", emoji: "🔐",
+    id: "auth", name: "Authentication", icon: "lock",
     blurb: "Register, log in and manage your own account. A successful login returns a JWT (30-day expiry) both in the body and as an httpOnly cookie.",
     endpoints: [
       {
@@ -252,7 +270,7 @@ const GROUPS = [
       {
         method: "PUT", path: "/auth/updatedetails", access: "Private",
         summary: "Update your details",
-        desc: "Update the authenticated user's name and/or email.",
+        desc: "Update the authenticated user's name and email.",
         auth: true,
         body: [["name","string",false,"New display name"],["email","string",false,"New email"]],
         sampleBody: { name: "John D. Doe", email: "johnd@example.com" },
@@ -299,13 +317,13 @@ const GROUPS = [
     ]
   },
   {
-    id: "users", name: "Users", emoji: "👤",
+    id: "users", name: "Users", icon: "users",
     blurb: "Admin-only user management. Every route in this group requires an authenticated admin.",
     endpoints: [
       {
         method: "GET", path: "/users", access: "Admin",
         summary: "List all users",
-        desc: "Returns all users. Supports select / sort / page / limit. Admin only.",
+        desc: "Returns all users. Supports select, sort, page and limit. Admin only.",
         auth: true, roles: "admin",
         example: "/users?sort=name&limit=25",
         response: { success: true, count: 5, pagination: {}, data: [ { _id: "5c8a1d5b0190b214360dc031", name: "John Doe", role: "publisher" } ] }
@@ -353,7 +371,7 @@ const GROUPS = [
 ];
 
 /* =========================================================
-   RENDERING HELPERS
+   HELPERS
    ========================================================= */
 const el = (t, c, h) => { const e = document.createElement(t); if (c) e.className = c; if (h != null) e.innerHTML = h; return e; };
 const slug = (m, p) => (m + p).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -370,6 +388,32 @@ function highlightJSON(obj) {
 
 function pathHTML(p) {
   return p.split("/").map(seg => seg.startsWith(":") ? `<span class="var">/${esc(seg)}</span>` : (seg ? "/" + esc(seg) : "")).join("");
+}
+
+/* Format a JS value into an input string */
+function fmtVal(v) {
+  if (Array.isArray(v)) return v.join(", ");
+  if (typeof v === "boolean") return String(v);
+  return v == null ? "" : String(v);
+}
+/* Coerce an input string back to a typed value based on declared type */
+function coerce(v, type) {
+  if (/\[\]/.test(type) || /string\[\]/.test(type)) return v.split(",").map(s => s.trim()).filter(Boolean);
+  if (/boolean/i.test(type)) return v.trim().toLowerCase() === "true";
+  if (/number/i.test(type)) { const n = Number(v); return isNaN(n) ? v : n; }
+  return v;
+}
+
+/* Pull default values for path params and query params out of ep.example */
+function parseExample(ep) {
+  const pathVals = {}, queryVals = {};
+  const parts = (ep.example || ep.path).split("?");
+  const pathPart = parts[0], queryPart = parts[1];
+  const ps = ep.path.split("/");
+  const es = pathPart.split("/");
+  ps.forEach((seg, i) => { if (seg.startsWith(":")) pathVals[seg.slice(1)] = (es[i] || "").trim(); });
+  if (queryPart) new URLSearchParams(queryPart).forEach((v, k) => { queryVals[k] = v; });
+  return { pathVals, queryVals };
 }
 
 function paramTable(rows, firstCol) {
@@ -398,6 +442,9 @@ function codeBlock(html, raw) {
   return box;
 }
 
+/* =========================================================
+   ENDPOINT CARD
+   ========================================================= */
 function buildEndpoint(ep) {
   const id = slug(ep.method, ep.path);
   const wrap = el("div", "endpoint"); wrap.id = id;
@@ -415,20 +462,15 @@ function buildEndpoint(ep) {
   body.appendChild(el("div", "desc", esc(ep.desc)));
 
   if (ep.auth) {
-    body.appendChild(el("div", null,
-      `<div class="block-label" style="margin-top:0">Authorization</div>`+
-      `<div style="font-size:13.5px;color:var(--text-dim)">🔒 Requires authentication${ep.roles ? ` · roles: <b style="color:var(--text)">${esc(ep.roles)}</b>` : ""}. ${AUTH_NOTE}</div>`));
+    body.appendChild(el("div", "block-label", "Authorization"));
+    body.appendChild(el("div", "auth-note",
+      `${icon("lock", 15)}<span>Requires authentication${ep.roles ? ` &middot; roles: <b style="color:var(--text)">${esc(ep.roles)}</b>` : ""}. ${AUTH_NOTE}</span>`));
   }
 
   if (ep.params)   { body.appendChild(el("div","block-label","Path Parameters")); body.appendChild(paramTable(ep.params, "Parameter")); }
   if (ep.query)    { body.appendChild(el("div","block-label","Query Parameters")); body.appendChild(paramTable(ep.query, "Parameter")); }
   if (ep.formData) { body.appendChild(el("div","block-label","Form Data (multipart)")); body.appendChild(paramTable(ep.formData, "Field")); }
   if (ep.body)     { body.appendChild(el("div","block-label","Request Body")); body.appendChild(paramTable(ep.body, "Field")); }
-
-  if (ep.sampleBody) {
-    body.appendChild(el("div","block-label","Example Request Body"));
-    body.appendChild(codeBlock(highlightJSON(ep.sampleBody), JSON.stringify(ep.sampleBody, null, 2)));
-  }
 
   body.appendChild(el("div","block-label","Example Response"));
   body.appendChild(codeBlock(highlightJSON(ep.response), JSON.stringify(ep.response, null, 2)));
@@ -446,38 +488,121 @@ function buildEndpoint(ep) {
   return wrap;
 }
 
+/* =========================================================
+   TRY IT  (per-parameter inputs that live-update the call)
+   ========================================================= */
 function buildTryIt(ep) {
   const box = el("div", "tryit");
-  box.appendChild(el("div","block-label","🚀 Try it"));
+  box.appendChild(el("div", "block-label", `${icon("zap", 13)} Try it`));
 
-  const row = el("div","row");
-  row.appendChild(el("span", `method m-${ep.method}`, ep.method));
-  const urlIn = el("input"); urlIn.type = "text"; urlIn.className = "url-in"; urlIn.value = BASE + ep.example;
-  const send = el("button","btn-send","Send"); send.type = "button";
-  row.appendChild(urlIn); row.appendChild(send);
-  box.appendChild(row);
+  const { pathVals, queryVals } = parseExample(ep);
 
-  const tokRow = el("div","row"); tokRow.style.marginTop = "8px";
-  const tokIn = el("input"); tokIn.type = "text"; tokIn.className = "url-in";
-  tokIn.placeholder = "🔑  Bearer token (optional — remembered for this tab)";
-  tokIn.value = sessionStorage.getItem("cv_token") || "";
-  tokIn.oninput = () => sessionStorage.setItem("cv_token", tokIn.value.trim());
-  tokRow.appendChild(tokIn);
-  box.appendChild(tokRow);
+  // Derive body field definitions (fall back to sampleBody keys when no body[] table exists)
+  let bodyDefs = ep.body;
+  if (!bodyDefs && ep.sampleBody) {
+    bodyDefs = Object.keys(ep.sampleBody).map(k => {
+      const v = ep.sampleBody[k];
+      const t = Array.isArray(v) ? "string[]" : typeof v === "number" ? "number" : typeof v === "boolean" ? "boolean" : "string";
+      return [k, t, false, ""];
+    });
+  }
+  const hasBody = ["POST", "PUT"].includes(ep.method) && bodyDefs && bodyDefs.length > 0;
 
-  let bodyIn = null;
-  const hasBody = ["POST","PUT"].includes(ep.method) && ep.sampleBody;
-  if (hasBody) {
-    bodyIn = el("textarea"); bodyIn.value = JSON.stringify(ep.sampleBody, null, 2); bodyIn.spellcheck = false;
-    box.appendChild(bodyIn);
+  // Only offer interactive inputs for simple query params (skip illustrative ones like {field}[operator])
+  const usableQuery = (ep.query || []).filter(q => /^[a-zA-Z0-9_]+$/.test(q[0]));
+
+  const inputs = []; // { name, type, kind, inp }
+  const fields = el("div", "fields");
+
+  function addGroup(label, defs, kind, defaults) {
+    if (!defs || !defs.length) return;
+    fields.appendChild(el("div", "field-label", label));
+    const grid = el("div", "field-grid");
+    defs.forEach(([name, type, req, desc]) => {
+      const nm = el("div", "field-name", `<span class="fn mono">${esc(name)}</span>${req ? '<span class="req">*</span>' : ''}`);
+      const inp = el("input", "field-in"); inp.type = "text"; inp.placeholder = type;
+      inp.value = (defaults && defaults[name] != null) ? defaults[name] : "";
+      inp.dataset.kind = kind; inp.title = desc || "";
+      inp._name = name; inp._type = type; inp._kind = kind;
+      inp.addEventListener("input", rebuild);
+      inputs.push({ name, type, kind, inp });
+      grid.appendChild(nm); grid.appendChild(inp);
+    });
+    fields.appendChild(grid);
   }
 
-  const resp = el("div","resp");
+  const bodyDefaults = {};
+  if (bodyDefs) bodyDefs.forEach(([name]) => { if (ep.sampleBody && ep.sampleBody[name] !== undefined) bodyDefaults[name] = fmtVal(ep.sampleBody[name]); });
+
+  addGroup("Path parameters", ep.params, "path", pathVals);
+  addGroup("Query parameters", usableQuery, "query", queryVals);
+  if (hasBody) addGroup("Body", bodyDefs, "body", bodyDefaults);
+
+  // Auth token (auto-filled on sign in, shared across every panel)
+  fields.appendChild(el("div", "field-label", `${icon("key", 13)} Auth token`));
+  const tokGrid = el("div", "field-grid");
+  const tokName = el("div", "field-name", `<span class="fn mono">Bearer</span>`);
+  const tokIn = el("input", "field-in tok-in"); tokIn.type = "text";
+  tokIn.placeholder = "auto-filled when you sign in, or paste a JWT";
+  tokIn.value = currentToken();
+  tokGrid.appendChild(tokName); tokGrid.appendChild(tokIn);
+  fields.appendChild(tokGrid);
+
+  box.appendChild(fields);
+
+  // Request line (live preview + send)
+  const reqLine = el("div", "req-line");
+  reqLine.appendChild(el("span", `method m-${ep.method}`, ep.method));
+  const urlPreview = el("input", "url-in url-preview"); urlPreview.type = "text"; urlPreview.readOnly = true;
+  const send = el("button", "btn-send", "Send"); send.type = "button";
+  reqLine.appendChild(urlPreview); reqLine.appendChild(send);
+  box.appendChild(reqLine);
+
+  // Generated body preview
+  let bodyPre = null;
+  if (hasBody) {
+    box.appendChild(el("div", "block-label", "Request body (generated)"));
+    const pbox = el("div", "codebox");
+    bodyPre = el("pre", "mono");
+    const cbtn = el("button", "copy", "Copy");
+    cbtn.onclick = () => navigator.clipboard.writeText(JSON.stringify(buildBodyObj(), null, 2)).then(() => { cbtn.textContent = "Copied!"; setTimeout(() => cbtn.textContent = "Copy", 1200); });
+    pbox.appendChild(cbtn); pbox.appendChild(bodyPre);
+    box.appendChild(pbox);
+  }
+
+  const resp = el("div", "resp");
   box.appendChild(resp);
 
   if (ep.formData) {
-    box.appendChild(el("div","hint","Photo upload uses multipart/form-data and can't be sent from this console — use curl or Postman with a real file."));
+    box.appendChild(el("div", "hint", "Photo upload uses multipart/form-data and can't be sent from this console. Use curl or Postman with a real file."));
   }
+
+  function buildUrl() {
+    let path = ep.path;
+    inputs.filter(i => i.kind === "path").forEach(i => {
+      const v = i.inp.value.trim();
+      path = path.replace(new RegExp(":" + i.name + "\\b"), v ? encodeURIComponent(v) : (":" + i.name));
+    });
+    const qs = inputs.filter(i => i.kind === "query" && i.inp.value.trim() !== "")
+      .map(i => `${encodeURIComponent(i.name)}=${encodeURIComponent(i.inp.value.trim())}`).join("&");
+    return BASE + path + (qs ? "?" + qs : "");
+  }
+
+  function buildBodyObj() {
+    const obj = {};
+    inputs.filter(i => i.kind === "body").forEach(i => {
+      const v = i.inp.value;
+      if (v.trim() === "") return;
+      obj[i.name] = coerce(v, i.type);
+    });
+    return obj;
+  }
+
+  function rebuild() {
+    urlPreview.value = buildUrl();
+    if (bodyPre) bodyPre.innerHTML = highlightJSON(buildBodyObj());
+  }
+  rebuild();
 
   send.onclick = async () => {
     resp.className = "resp show";
@@ -486,18 +611,13 @@ function buildTryIt(ep) {
     const opts = { method: ep.method, headers: {} };
     const tok = tokIn.value.trim();
     if (tok) opts.headers["Authorization"] = "Bearer " + tok;
-    if (hasBody && bodyIn) {
-      try { JSON.parse(bodyIn.value); }
-      catch (e) {
-        resp.innerHTML = `<div class="status"><span class="code s4">Invalid JSON</span> Fix the request body and try again.</div>`;
-        send.disabled = false; return;
-      }
+    if (hasBody) {
       opts.headers["Content-Type"] = "application/json";
-      opts.body = bodyIn.value;
+      opts.body = JSON.stringify(buildBodyObj());
     }
     const t0 = performance.now();
     try {
-      const r = await fetch(urlIn.value, opts);
+      const r = await fetch(urlPreview.value, opts);
       const dt = Math.round(performance.now() - t0);
       const ct = r.headers.get("content-type") || "";
       const payload = ct.includes("application/json") ? await r.json() : await r.text();
@@ -507,7 +627,7 @@ function buildTryIt(ep) {
         typeof payload === "string" ? esc(payload) : highlightJSON(payload),
         typeof payload === "string" ? payload : JSON.stringify(payload, null, 2)));
     } catch (err) {
-      resp.innerHTML = `<div class="status"><span class="code s5">Network error</span></div><div class="hint">${esc(err.message)} — is the server running and reachable from this origin?</div>`;
+      resp.innerHTML = `<div class="status"><span class="code s5">Network error</span></div><div class="hint">${esc(err.message)}. Is the server running and reachable from this origin?</div>`;
     } finally {
       send.disabled = false;
     }
@@ -526,11 +646,11 @@ let totalEndpoints = 0;
 GROUPS.forEach(group => {
   totalEndpoints += group.endpoints.length;
 
-  const ng = el("div","nav-group");
-  ng.appendChild(el("div","nav-label", `${group.emoji} ${group.name}`));
+  const ng = el("div", "nav-group");
+  ng.appendChild(el("div", "nav-label", `${icon(group.icon, 13)}<span>${esc(group.name)}</span>`));
   group.endpoints.forEach(ep => {
     const id = slug(ep.method, ep.path);
-    const link = el("a","nav-link"); link.href = "#" + id; link.dataset.target = id;
+    const link = el("a", "nav-link"); link.href = "#" + id; link.dataset.target = id;
     link.dataset.search = (ep.method + " " + ep.path + " " + ep.summary).toLowerCase();
     link.innerHTML = `<span class="m m-${ep.method}">${ep.method}</span><span class="lbl">${esc(ep.summary)}</span>`;
     link.onclick = (e) => { e.preventDefault(); openAndScroll(id); document.body.classList.remove("nav-open"); };
@@ -538,9 +658,9 @@ GROUPS.forEach(group => {
   });
   navEl.appendChild(ng);
 
-  const sec = el("section","section"); sec.id = "sec-" + group.id;
-  const sh = el("div","section-head");
-  sh.innerHTML = `<h3><span class="emoji">${group.emoji}</span> ${esc(group.name)}</h3><p>${esc(group.blurb)}</p>`;
+  const sec = el("section", "section"); sec.id = "sec-" + group.id;
+  const sh = el("div", "section-head");
+  sh.innerHTML = `<h3>${icon(group.icon, 20)}<span>${esc(group.name)}</span></h3><p>${esc(group.blurb)}</p>`;
   sec.appendChild(sh);
   group.endpoints.forEach(ep => sec.appendChild(buildEndpoint(ep)));
   sectionsEl.appendChild(sec);
@@ -584,9 +704,13 @@ searchInput.addEventListener("input", () => {
   });
 });
 document.addEventListener("keydown", e => {
-  if (e.key === "/" && document.activeElement !== searchInput) { e.preventDefault(); searchInput.focus(); }
+  if (e.key === "/" && document.activeElement !== searchInput && !isTyping()) { e.preventDefault(); searchInput.focus(); }
   if (e.key === "Escape" && document.activeElement === searchInput) { searchInput.value = ""; searchInput.dispatchEvent(new Event("input")); searchInput.blur(); }
 });
+function isTyping() {
+  const a = document.activeElement;
+  return a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA");
+}
 
 /* =========================================================
    SCROLL SPY
@@ -607,6 +731,112 @@ document.querySelectorAll(".endpoint").forEach(e => spyObserver.observe(e));
    ========================================================= */
 document.getElementById("menuBtn").addEventListener("click", () => document.body.classList.toggle("nav-open"));
 document.getElementById("overlay").addEventListener("click", () => document.body.classList.remove("nav-open"));
+
+/* =========================================================
+   AUTHENTICATION  (sign in -> token auto-fills every panel)
+   ========================================================= */
+function currentToken() { return sessionStorage.getItem("cv_token") || ""; }
+let authName = sessionStorage.getItem("cv_name") || null;
+
+const authBtn = document.getElementById("authBtn");
+const authModal = document.getElementById("authModal");
+const authForm = document.getElementById("authForm");
+const authEmail = document.getElementById("authEmail");
+const authPass = document.getElementById("authPass");
+const authErr = document.getElementById("authErr");
+
+function applyTokenToFields(t) {
+  document.querySelectorAll(".tok-in").forEach(f => { if (f.value !== t) f.value = t; });
+}
+
+function updateAuthUI() {
+  const t = currentToken();
+  if (t) {
+    authBtn.classList.add("authed");
+    authBtn.innerHTML = `${icon("user", 15)}<span>${esc(authName || "Signed in")}</span>${icon("logout", 15)}`;
+    authBtn.title = "Sign out";
+  } else {
+    authBtn.classList.remove("authed");
+    authBtn.innerHTML = `${icon("login", 15)}<span>Sign in</span>`;
+    authBtn.title = "Sign in";
+  }
+}
+
+function setToken(t, name) {
+  if (t) sessionStorage.setItem("cv_token", t); else sessionStorage.removeItem("cv_token");
+  if (name !== undefined) {
+    authName = name;
+    if (name) sessionStorage.setItem("cv_name", name); else sessionStorage.removeItem("cv_name");
+  }
+  applyTokenToFields(t);
+  updateAuthUI();
+}
+
+function openAuth() { authErr.textContent = ""; authModal.classList.add("show"); setTimeout(() => authEmail.focus(), 50); }
+function closeAuth() { authModal.classList.remove("show"); }
+
+authBtn.addEventListener("click", () => {
+  if (currentToken()) {
+    fetch(BASE + "/auth/logout", { headers: { Authorization: "Bearer " + currentToken() } }).catch(() => {});
+    setToken("", null);
+  } else {
+    openAuth();
+  }
+});
+document.getElementById("authClose").addEventListener("click", closeAuth);
+authModal.addEventListener("click", e => { if (e.target === authModal) closeAuth(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && authModal.classList.contains("show")) closeAuth(); });
+
+authForm.addEventListener("submit", async e => {
+  e.preventDefault();
+  authErr.textContent = "";
+  const btn = authForm.querySelector("button[type=submit]");
+  btn.disabled = true; btn.textContent = "Signing in…";
+  try {
+    const r = await fetch(BASE + "/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: authEmail.value.trim(), password: authPass.value }),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.token) {
+      authErr.textContent = (data && data.error) ? data.error : "Login failed (" + r.status + ")";
+      return;
+    }
+    let name = null;
+    try {
+      const me = await fetch(BASE + "/auth/me", { headers: { Authorization: "Bearer " + data.token } });
+      if (me.ok) { const md = await me.json(); name = md.data && md.data.name; }
+    } catch (_) {}
+    setToken(data.token, name || null);
+    authPass.value = "";
+    closeAuth();
+  } catch (err) {
+    authErr.textContent = err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = "Sign in";
+  }
+});
+
+// Manual token edits sync to every panel (delegated)
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.classList && t.classList.contains("tok-in")) {
+    const v = t.value.trim();
+    if (v) sessionStorage.setItem("cv_token", v); else sessionStorage.removeItem("cv_token");
+    document.querySelectorAll(".tok-in").forEach(f => { if (f !== t && f.value !== v) f.value = v; });
+    updateAuthUI();
+  }
+});
+
+// Init auth state; resolve display name if we already hold a token
+updateAuthUI();
+if (currentToken() && !authName) {
+  fetch(BASE + "/auth/me", { headers: { Authorization: "Bearer " + currentToken() } })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if (d && d.data && d.data.name) { authName = d.data.name; sessionStorage.setItem("cv_name", authName); updateAuthUI(); } })
+    .catch(() => {});
+}
 
 /* =========================================================
    THEME

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CampVerse API — Documentation</title>
-  <meta name="description" content="Interactive documentation for the CampVerse REST API — bootcamps, courses, reviews, users and authentication." />
+  <title>CampVerse API Documentation</title>
+  <meta name="description" content="Interactive documentation for the CampVerse REST API: bootcamps, courses, reviews, users and authentication." />
   <link rel="stylesheet" href="/docs.css" />
 </head>
 <body data-theme="dark">
@@ -13,7 +13,9 @@
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="brand">
-        <div class="logo">🏕️</div>
+        <div class="logo">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 21 14 3"/><path d="M20.5 21 10 3"/><path d="M15.5 21 12 15l-3.5 6"/><path d="M2 21h20"/></svg>
+        </div>
         <div>
           <h1>CampVerse API</h1>
           <span>v1 · REST reference</span>
@@ -35,6 +37,7 @@
         </button>
         <div class="spacer"></div>
         <span class="pill"><span class="dot"></span> API online</span>
+        <button class="auth-btn" id="authBtn" type="button" title="Sign in"></button>
         <button class="icon-btn" id="themeBtn" aria-label="Toggle theme" title="Toggle theme">
           <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"></svg>
         </button>
@@ -43,11 +46,11 @@
       <!-- Hero -->
       <section class="hero">
         <h2>The <span class="grad">CampVerse</span> API</h2>
-        <p>A RESTful backend for managing coding bootcamps, courses, reviews and users — with JWT auth, role-based access, filtering, sorting and pagination baked in. Expand any endpoint below and hit <b>Try it</b> to fire a real request.</p>
+        <p>A RESTful backend for managing coding bootcamps, courses, reviews and users, with JWT auth, role-based access, filtering, sorting and pagination baked in. Expand any endpoint below, fill in the parameters, and hit <b>Send</b> to fire a real request.</p>
         <div class="hero-cards">
-          <div class="stat"><div class="n" id="stat-ep">—</div><div class="l">Endpoints</div></div>
+          <div class="stat"><div class="n" id="stat-ep">0</div><div class="l">Endpoints</div></div>
           <div class="stat"><div class="n">5</div><div class="l">Resources</div></div>
-          <div class="stat"><div class="n">JWT</div><div class="l">Auth · cookies</div></div>
+          <div class="stat"><div class="n">JWT</div><div class="l">Auth &amp; cookies</div></div>
           <div class="stat"><div class="n">3</div><div class="l">Roles</div></div>
         </div>
         <div class="baseurl">
@@ -60,9 +63,34 @@
       <div id="sections"></div>
 
       <footer>
-        Built with ❤️ for <b>CampVerse</b> · Node · Express · MongoDB &nbsp;·&nbsp; © <span id="year"></span> Faraz Pourebrahim
+        Built for <b>CampVerse</b> · Node · Express · MongoDB &nbsp;·&nbsp; © <span id="year"></span> Faraz Pourebrahim
       </footer>
     </main>
+  </div>
+
+  <!-- Auth modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Sign in">
+      <div class="modal-head">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Sign in
+        </h3>
+        <button class="icon-btn modal-close" id="authClose" type="button" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <p class="modal-sub">Authenticate against the live API. Your token is stored for this tab and auto-fills every Try it panel.</p>
+      <form id="authForm">
+        <label class="modal-label" for="authEmail">Email</label>
+        <input class="modal-in" id="authEmail" type="email" autocomplete="username" placeholder="you@example.com" required />
+        <label class="modal-label" for="authPass">Password</label>
+        <input class="modal-in" id="authPass" type="password" autocomplete="current-password" placeholder="Your password" required />
+        <div class="modal-err" id="authErr"></div>
+        <button class="btn-send modal-submit" type="submit">Sign in</button>
+      </form>
+      <div class="modal-hint">POST /api/v1/auth/login</div>
+    </div>
   </div>
 
   <script src="/docs.js"></script>
