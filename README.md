@@ -110,7 +110,7 @@ campverse/
 ├── models/             # Mongoose models
 ├── routes/             # API routes
 ├── middleware/         # Custom middleware (auth, error handler, etc.)
-├── utils/              # Utility functions (email, geocoder, etc.)
+├── utils/              # Utility functions (email, error responses, etc.)
 ├── public/uploads/     # Uploaded files
 ├── server.js           # Main entry point
 ├── package.json
